@@ -1,0 +1,10 @@
+nav ul a.active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.icon-block {
+  padding: 0 15px;
+}
+.icon-block .material-icons {
+	font-size: inherit;
+}
