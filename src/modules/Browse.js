@@ -4,28 +4,114 @@ import * as helper from './Helper'
 export default React.createClass({
   getInitialState() {
     return {
-      data: []
+      data: [],
+      context: [],
+      filter: []
     }
   },
   componentDidMount() {
-    var query = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
+    var queryData = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
       +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
       +" SELECT * WHERE { "
-      +"  ?node   a               owl:NamedIndividual ; "
-      +"          dc:title        ?title; "
-      +"          dc:source       ?url; "
-      +"          dc:description  ?description . }";
-    helper.sparqlSelect(query).then((result)=>{
+      +"  ?node a owl:NamedIndividual ; "
+      +"   dc:title ?title; "
+      +"   dc:source ?url; "
+      +"   dc:description ?description . }";
+
+    helper.sparqlSelect(queryData).then((result)=>{
       this.setState({
         data: helper.transformSparqlResults(result)
       });
-      console.log(this.state.data);
+    });
+
+    var queryContext = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
+      +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
+      +" SELECT ?context ?label WHERE { "
+      +"  ?node a owl:NamedIndividual ; a ?context. "
+      +"  ?context a skos:Concept ; skos:prefLabel ?label; "
+      + "}";
+
+    helper.sparqlSelect(queryContext).then((result)=>{
+      this.setState({
+        context: helper.transformSparqlResults(result)
+      });
     });
   },
+  updateData() {
+    var filterData = "";
+    var filterContext = "";
+
+    this.state.filter.forEach(function(item){
+      filterData += " FILTER EXISTS { ?node a <" + item.context + "> } ";
+      filterContext += " FILTER ( ?context != <" + item.context + "> ) "
+    });
+
+    var queryData = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
+      +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
+      +" SELECT * WHERE { "
+      +"  ?node a owl:NamedIndividual ; "
+      +"   dc:title ?title; "
+      +"   dc:source ?url; "
+      +"   dc:description ?description . "
+      + filterData
+      +" }";
+
+    helper.sparqlSelect(queryData).then((result)=>{
+      this.setState({
+        data: helper.transformSparqlResults(result)
+      });
+    });
+
+    var queryContext = ""
+      +"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>"
+      +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
+      +"SELECT ?context ?label WHERE {"
+      +"  ?node a owl:NamedIndividual ; a ?context."
+      +"  ?context a skos:Concept ; skos:prefLabel ?label."
+      + filterData
+      + filterContext
+      +"}";
+
+    helper.sparqlSelect(queryContext).then((result)=>{
+      this.setState({
+        context: helper.transformSparqlResults(result)
+      });
+    });
+  },
+  setFilter(item) {
+    var filter = this.state.filter;
+    filter.push(item);
+
+    var context = this.state.context;
+    var index = context.indexOf(item);
+    context.splice(index, 1);
+
+    this.setState({
+      filter: filter,
+      context: context
+    });
+
+    this.updateData();
+  },
+  removeFilter(item) {
+    var context = this.state.context;
+    context.push(item);
+
+    var filter = this.state.filter;
+    var index = filter.indexOf(item);
+    filter.splice(index, 1);
+
+    this.setState({
+      filter: filter,
+      context: context
+    });
+
+    this.updateData();
+  },
   render() {
-    var rows = [];
+    var dataRows = [];
     this.state.data.forEach(function(item){
-      rows.push(
+      dataRows.push(
         <div className="list-group" key={item.node}>
           <div className="list-group-item">
             <h4 className="list-group-item-heading">{item.title}</h4>
@@ -34,11 +120,46 @@ export default React.createClass({
         </div>
       );
     });
+
+    var contextRows = [];
+    var self = this;
+    this.state.context.forEach(function(item){
+      contextRows.push(
+        <a className="list-group-item" key={item.context} onClick={self.setFilter.bind(this, item)}>
+          {item.label}
+        </a>
+      );
+    });
+
+    var filterRows = [];
+    this.state.filter.forEach(function(item){
+      filterRows.push(
+        <a className="list-group-item" key={item.context} onClick={self.removeFilter.bind(this, item)}>
+          {item.label} <i className="fa fa-trash-o fa-lg pull-right"></i>
+        </a>
+      );
+    });
+
     return <div>
       <div className="page-header">
         <h1>Browse</h1>
       </div>
-      {rows}
+      <div className="row">
+        <div className="col-md-3">
+          <div className="list-group">
+            <h3>Filter</h3>
+            {filterRows}
+          </div>
+          <div className="list-group">
+            <h3>Contex</h3>
+            {contextRows}
+          </div>
+        </div>
+        <div className="col-md-9">
+          <h3>Document</h3>
+          {dataRows}
+        </div>
+      </div>
     </div>
   }
 })
