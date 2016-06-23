@@ -26,7 +26,7 @@ export default React.createClass({
 
     var queryContext = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
       +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
-      +" SELECT ?context ?label WHERE { "
+      +" SELECT DISTINCT ?context ?label WHERE { "
       +"  ?node a owl:NamedIndividual ; a ?context. "
       +"  ?context a skos:Concept ; skos:prefLabel ?label; "
       + "}";
@@ -65,7 +65,7 @@ export default React.createClass({
     var queryContext = ""
       +"PREFIX skos: <http://www.w3.org/2004/02/skos/core#>"
       +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
-      +"SELECT ?context ?label WHERE {"
+      +"SELECT DISTINCT ?context ?label WHERE {"
       +"  ?node a owl:NamedIndividual ; a ?context."
       +"  ?context a skos:Concept ; skos:prefLabel ?label."
       + filterData
