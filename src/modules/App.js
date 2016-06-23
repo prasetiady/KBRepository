@@ -1,57 +1,43 @@
 import React from 'react'
 import { Link } from 'react-router'
 import NavLink from './NavLink'
+import 'bootstrap'
 
 export default React.createClass({
   render() {
     return (
       <div>
-        <nav className="light-blue lighten-1" role="navigation">
-          <div className="nav-wrapper container">
-            <Link id="logo-container" to="/" className="brand-logo">Sample</Link>
-            <ul className="right hide-on-med-and-down">
-              <li><NavLink to="/" onlyActiveOnIndex={true}>Home</NavLink></li>
-              <li><NavLink to="/about">About</NavLink></li>
-              <li><NavLink to="/repos">Repos</NavLink></li>
-            </ul>
+        {/* Fixed navbar */}
+        <nav className="navbar navbar-default navbar-fixed-top">
+          <div className="container">
+            <div className="navbar-header">
+              <button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span className="sr-only">Toggle navigation</span>
+                <span className="icon-bar"></span>
+                <span className="icon-bar"></span>
+                <span className="icon-bar"></span>
+              </button>
+              <span className="navbar-brand">KBRepository</span>
+            </div>
+            <div id="navbar" className="collapse navbar-collapse">
+              <ul className="nav navbar-nav">
+                <li><NavLink to="/" onlyActiveOnIndex={true}>Search</NavLink></li>
+                <li><NavLink to="/add">Add</NavLink></li>
+              </ul>
+            </div>
           </div>
         </nav>
 
+        {/* Begin page content */}
         <div className="container">
+          <br/><br/>
           {this.props.children}
+          <br/><br/>
         </div>
 
-        <footer className="page-footer orange">
+        <footer className="footer">
           <div className="container">
-            <div className="row">
-              <div className="col l6 s12">
-                <h5 className="white-text">Company Bio</h5>
-                <p className="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
-              </div>
-              <div className="col l3 s12">
-                <h5 className="white-text">Settings</h5>
-                <ul>
-                  <li><a className="white-text" href="#!">Link 1</a></li>
-                  <li><a className="white-text" href="#!">Link 2</a></li>
-                  <li><a className="white-text" href="#!">Link 3</a></li>
-                  <li><a className="white-text" href="#!">Link 4</a></li>
-                </ul>
-              </div>
-              <div className="col l3 s12">
-                <h5 className="white-text">Connect</h5>
-                <ul>
-                  <li><a className="white-text" href="#!">Link 1</a></li>
-                  <li><a className="white-text" href="#!">Link 2</a></li>
-                  <li><a className="white-text" href="#!">Link 3</a></li>
-                  <li><a className="white-text" href="#!">Link 4</a></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="footer-copyright">
-            <div className="container">
-              Dedy Prasetiady
-            </div>
+            <p className="text-muted">by Dedy Prasetiady.</p>
           </div>
         </footer>
       </div>

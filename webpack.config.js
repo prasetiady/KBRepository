@@ -21,7 +21,8 @@ module.exports = {
     extensions: ['', '.html', '.js', '.json', '.css'],
     alias: {
         style_css: __dirname + "/src/style.css",
-        materialize_css: __dirname + "/node_modules/materialize-css/dist/css/materialize.css"
+        bootstrap_css: __dirname + "/node_modules/bootstrap/dist/css/bootstrap.css",
+        font_awesome_css: __dirname + "/node_modules/font-awesome/css/font-awesome.css"
     }
   },
 
@@ -37,7 +38,8 @@ module.exports = {
       { test: /\.css?$/, loader: ExtractTextPlugin.extract("style-loader", "css-loader")},
       { test: /\.(png|jpg|jpeg|gif|ico)$/, loader: "file-loader?name=[path][name].[ext]"},
       { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?name=fonts/[name].[ext]" },
-      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=fonts/[name].[ext]" }
+      { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader?name=fonts/[name].[ext]" },
+      { test: /\.json$/, loader: 'json' },
     ]
   },
 
@@ -52,6 +54,10 @@ module.exports = {
     new webpack.NoErrorsPlugin(),
     new CopyWebpackPlugin([
       { from: 'images', to: 'images' }
-    ])
+    ]),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery"
+    })
   ]
 }
