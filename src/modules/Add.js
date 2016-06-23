@@ -1,5 +1,6 @@
 import React from 'react'
 import Typeahead from 'react-bootstrap-typeahead'
+import * as helper from './Helper'
 
 export default React.createClass({
   getInitialState() {
@@ -12,34 +13,13 @@ export default React.createClass({
     }
   },
   componentDidMount() {
-    var settings = {
-      "async": true,
-      "crossDomain": true,
-      "url": "http://localhost:8080/marmotta/sparql/select",
-      "method": "POST",
-      "headers": {
-        "content-type": "application/sparql-query;",
-        "accept": "application/sparql-results+json",
-      },
-      "data": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> SELECT * WHERE { ?node a skos:Concept; skos:prefLabel ?label. }"
-    }
-
-    var self = this;
-
-    $.ajax(settings).done(function (response) {
-      var items = response.results.bindings;
-      var context = [];
-      for(var i=0;i<items.length;i++){
-        var item = {
-          label: items[i].label.value,
-          node: items[i].node.value
-        }
-        context.push(item);
-      }
-      self.setState({
-        context: context
+    var query = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> SELECT * WHERE { ?node a skos:Concept; skos:prefLabel ?label. }";
+    helper.sparqlSelect(query)
+      .then((results)=>{
+        this.setState({
+          context: helper.transformSparqlResults(results)
+        });
       });
-    });
   },
   handleSubmit(event) {
     event.preventDefault();
@@ -54,36 +34,27 @@ export default React.createClass({
       selectedContext += " a <" + this.state.selectedContext[i].node + ">; "
     }
 
-    var settings = {
-      "async": true,
-      "crossDomain": true,
-      "url": "http://localhost:8080/marmotta/sparql/update",
-      "method": "POST",
-      "headers": {
-        "content-type": "application/sparql-update;",
-      },
-      "data": "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
-          +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
-          +" PREFIX :<http://localhost:8080/marmotta/resource/> "
-          +" INSERT DATA { "
-          +"  _:node  a               owl:NamedIndividual;"
-          + selectedContext
-          +"          dc:title        \"" + this.state.title + "\";"
-          +"          dc:description  \"" + this.state.description + "\";"
-          +"          dc:source       \"" + this.state.url + "\". }"
-    }
+    var query = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
+        +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
+        +" PREFIX :<http://localhost:8080/marmotta/resource/> "
+        +" INSERT DATA { "
+        +"  _:node  a               owl:NamedIndividual;"
+        + selectedContext
+        +"          dc:title        \"" + this.state.title + "\";"
+        +"          dc:description  \"" + this.state.description + "\";"
+        +"          dc:source       \"" + this.state.url + "\". }";
 
-    console.log(settings);
-
-    // $.ajax(settings).done(function (response) {
-    //   console.log(response);
-    // });
+    helper.sparqlUpdate(query).then((results)=>{
+      alert("success");
+    }).catch((jqXHR, textStatus)=>{
+      console.log(jqXHR);
+      console.log(textStatus);
+    });
 
     this.setState({
       url: '',
       title: '',
-      description: '',
-      selectedContext: []
+      description: ''
     })
   },
   handleChange(field, event) {
