@@ -12,25 +12,86 @@ export default React.createClass({
     }
   },
   componentDidMount() {
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "http://localhost:8080/marmotta/sparql/select",
+      "method": "POST",
+      "headers": {
+        "content-type": "application/sparql-query;",
+        "accept": "application/sparql-results+json",
+      },
+      "data": "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> SELECT * WHERE { ?node a skos:Concept; skos:prefLabel ?label. }"
+    }
+
+    var self = this;
+
+    $.ajax(settings).done(function (response) {
+      var items = response.results.bindings;
+      var context = [];
+      for(var i=0;i<items.length;i++){
+        var item = {
+          label: items[i].label.value,
+          node: items[i].node.value
+        }
+        context.push(item);
+      }
+      self.setState({
+        context: context
+      });
+    });
+  },
+  handleSubmit(event) {
+    event.preventDefault();
+
+    if(this.state.selectedContext.length == 0){
+      alert('Please select at least one Fields of Science and Technology')
+      return false;
+    }
+
+    var selectedContext = "";
+    for(var i=0;i<this.state.selectedContext.length;i++){
+      selectedContext += " a <" + this.state.selectedContext[i].node + ">; "
+    }
+
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "http://localhost:8080/marmotta/sparql/update",
+      "method": "POST",
+      "headers": {
+        "content-type": "application/sparql-update;",
+      },
+      "data": "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
+          +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
+          +" PREFIX :<http://localhost:8080/marmotta/resource/> "
+          +" INSERT DATA { "
+          +"  _:node  a               owl:NamedIndividual;"
+          + selectedContext
+          +"          dc:title        \"" + this.state.title + "\";"
+          +"          dc:description  \"" + this.state.description + "\";"
+          +"          dc:source       \"" + this.state.url + "\". }"
+    }
+
+    console.log(settings);
+
+    // $.ajax(settings).done(function (response) {
+    //   console.log(response);
+    // });
+
     this.setState({
-      context : [
-        {id: 1, name: 'John'},
-        {id: 2, name: 'Miles'},
-        {id: 3, name: 'Charles'},
-        {id: 4, name: 'Herbie'},
-      ]
+      url: '',
+      title: '',
+      description: '',
+      selectedContext: []
     })
   },
-  _handleSubmit(event) {
-    event.preventDefault();
-    console.log(this.state);
-  },
-  _handleChange(field, event) {
+  handleChange(field, event) {
     var nextState = {};
     nextState[field] = event.target.value;
     this.setState(nextState);
   },
-  _handleTypeaheadChange(selected) {
+  handleTypeaheadChange(selected) {
     var nextState = {};
     nextState['selectedContext'] = selected;
     this.setState(nextState);
@@ -40,28 +101,28 @@ export default React.createClass({
       <div className="page-header">
         <h1>Add</h1>
       </div>
-      <form onSubmit={this._handleSubmit}>
+      <form onSubmit={this.handleSubmit}>
         <div className="form-group">
           <label>URL</label>
-          <input type="text" className="form-control" placeholder="URL" value={this.state.url} onChange={this._handleChange.bind(this, 'url')}/>
+          <input required type="text" className="form-control" placeholder="URL" value={this.state.url} onChange={this.handleChange.bind(this, 'url')}/>
         </div>
         <div className="form-group">
           <label>Title</label>
-          <input type="text" className="form-control" placeholder="Title" value={this.state.title} onChange={this._handleChange.bind(this, 'title')}/>
+          <input required type="text" className="form-control" placeholder="Title" value={this.state.title} onChange={this.handleChange.bind(this, 'title')}/>
         </div>
         <div id="bloodhound" className="form-group">
           <label>Fields of Science and Technology</label>
           <Typeahead
-            labelKey="name"
             multiple
-            onChange={(selected) => this._handleTypeaheadChange(selected)}
+            required
+            onChange={(selected) => this.handleTypeaheadChange(selected)}
             options={this.state.context}
             placeholder="Fields of Science and Technology"
           />
         </div>
         <div className="form-group">
           <label>Description</label>
-          <textarea className="form-control" rows="5" value={this.state.description} onChange={this._handleChange.bind(this, 'description')}></textarea>
+          <textarea required className="form-control" rows="5" value={this.state.description} onChange={this.handleChange.bind(this, 'description')}></textarea>
         </div>
         <button type="submit" className="btn btn-default">Submit</button>
       </form>
