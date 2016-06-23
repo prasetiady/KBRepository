@@ -17,15 +17,6 @@ module.exports = {
     filename: '[name].js'
   },
 
-  resolve: {
-    extensions: ['', '.html', '.js', '.json', '.css'],
-    alias: {
-        style_css: __dirname + "/src/style.css",
-        bootstrap_css: __dirname + "/node_modules/bootstrap/dist/css/bootstrap.css",
-        font_awesome_css: __dirname + "/node_modules/font-awesome/css/font-awesome.css"
-    }
-  },
-
   module: {
     loaders: [
       { test: /\.js$/,
