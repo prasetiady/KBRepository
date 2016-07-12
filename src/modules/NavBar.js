@@ -19,7 +19,7 @@ export default React.createClass({
           <ul className="nav navbar-nav">
             <li><NavLink to="/" onlyActiveOnIndex={true}>Search</NavLink></li>
             <li><NavLink to="/add">Add</NavLink></li>
-            <li><NavLink to="/browse">Browse</NavLink></li>
+            <li><NavLink to="/manage">Manage</NavLink></li>
           </ul>
         </div>
       </div>

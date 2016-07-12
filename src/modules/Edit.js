@@ -5,7 +5,7 @@ import * as helper from './Helper'
 export default React.createClass({
   getInitialState() {
     return {
-      url: '',
+      url: helper.getParameterByName('url'),
       title: '',
       context: [],
       selectedContext : [],
@@ -20,6 +20,24 @@ export default React.createClass({
           context: helper.transformSparqlResults(results)
         });
       });
+
+    console.log(this.state);
+
+    var queryData = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
+      +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
+      +" SELECT * WHERE { "
+      +"  <" + this.state.url + "> a owl:NamedIndividual ; "
+      +"   dc:title ?title; "
+      +"   dc:description ?description . "
+      +" }";
+    console.log(queryData);
+    helper.sparqlSelect(queryData).then((result)=>{
+      var data = helper.transformSparqlResults(result);
+      this.setState({
+        title: data[0].title,
+        description: data[0].description
+      });
+    });
   },
   handleSubmit(event) {
     event.preventDefault();
@@ -29,36 +47,16 @@ export default React.createClass({
       return false;
     }
 
-    // Check If Document Exist
-    var queryCheckIfDocumentExist = ""
+    var query = ""
       +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
-      +"SELECT * WHERE { <" + this.state.url + ">  a owl:NamedIndividual; ?p ?o. }";
+      +"DELETE {<" + this.state.url + "> ?p ?o} WHERE {"
+      + "<" + this.state.url + ">  a owl:NamedIndividual; ?p ?o.}";
 
-    helper.sparqlSelect(queryCheckIfDocumentExist).then((result)=>{
-      if (result.results.bindings.length > 0) { // Document Exist
-        var r = confirm("Document with same uri exist update document ?");
-        if (r != true ) return false;
-        console.log('document exist');
-        updateDocument();
-      } else { // Document Not-Exist
-        console.log('document not exist');
-        addDocument();
-      }
+    helper.sparqlUpdate(query).then((result)=>{
+      addDocument();
     });
 
     var self = this;
-
-    function updateDocument(){
-      var query = ""
-        +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
-        +"DELETE {<" + self.state.url + "> ?p ?o} WHERE {"
-        + "<" + self.state.url + ">  a owl:NamedIndividual; ?p ?o.}";
-
-      helper.sparqlUpdate(query).then((result)=>{
-        addDocument();
-      });
-    }
-
     function addDocument(){
       var selectedContext = "";
       for(var i=0;i<self.state.selectedContext.length;i++){
@@ -79,13 +77,7 @@ export default React.createClass({
       }).catch((response)=>{
         alert(response.statusText);
         console.log(response);
-      })
-
-      self.setState({
-        url: '',
-        title: '',
-        description: ''
-      })
+      });
     }
   },
   handleInputChange(field, event) {
@@ -101,12 +93,12 @@ export default React.createClass({
   render() {
     return <div>
       <div className="page-header">
-        <h1>Add</h1>
+        <h1>Edit</h1>
       </div>
       <form onSubmit={this.handleSubmit}>
         <div className="form-group">
           <label>URL</label>
-          <input required type="text" className="form-control" placeholder="URL" value={this.state.url} onChange={this.handleInputChange.bind(this, 'url')}/>
+          <input required disabled type="text" className="form-control" placeholder="URL" value={this.state.url} onChange={this.handleInputChange.bind(this, 'url')}/>
         </div>
         <div className="form-group">
           <label>Title</label>

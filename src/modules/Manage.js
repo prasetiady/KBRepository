@@ -1,5 +1,6 @@
 import React from 'react'
 import * as helper from './Helper'
+import { browserHistory } from 'react-router'
 
 export default React.createClass({
   getInitialState() {
@@ -10,32 +11,7 @@ export default React.createClass({
     }
   },
   componentDidMount() {
-    var queryData = "PREFIX dc: <http://purl.org/dc/elements/1.1/> "
-      +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
-      +" SELECT * WHERE { "
-      +"  ?node a owl:NamedIndividual ; "
-      +"   dc:title ?title; "
-      +"   dc:source ?url; "
-      +"   dc:description ?description . }";
-
-    helper.sparqlSelect(queryData).then((result)=>{
-      this.setState({
-        data: helper.transformSparqlResults(result)
-      });
-    });
-
-    var queryContext = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> "
-      +" PREFIX owl: <http://www.w3.org/2002/07/owl#> "
-      +" SELECT DISTINCT ?context ?label WHERE { "
-      +"  ?node a owl:NamedIndividual ; a ?context. "
-      +"  ?context a skos:Concept ; skos:prefLabel ?label; "
-      + "}";
-
-    helper.sparqlSelect(queryContext).then((result)=>{
-      this.setState({
-        context: helper.transformSparqlResults(result)
-      });
-    });
+    this.updateData();
   },
   updateData() {
     var filterData = "";
@@ -51,7 +27,6 @@ export default React.createClass({
       +" SELECT * WHERE { "
       +"  ?node a owl:NamedIndividual ; "
       +"   dc:title ?title; "
-      +"   dc:source ?url; "
       +"   dc:description ?description . "
       + filterData
       +" }";
@@ -108,24 +83,46 @@ export default React.createClass({
 
     this.updateData();
   },
+  deleteData(item) {
+    var r = confirm("are you sure want to delete this document ? \n "
+                    + " title: " + item.title +  "\n "
+                    + " url: " + item.node );
+    if (r != true ) return false;
+
+    var query = ""
+      +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
+      +"DELETE {<" + item.node + "> ?p ?o} WHERE {"
+      + "<" + item.node + ">  a owl:NamedIndividual; ?p ?o.}";
+
+    helper.sparqlUpdate(query).then((result)=>{
+      this.updateData();
+    });
+  },
+  editData(item) {
+    browserHistory.push('/edit?url='+item.node);
+  },
   render() {
+    var self = this;
     var dataRows = [];
     this.state.data.forEach(function(item){
       dataRows.push(
         <div className="list-group" key={item.node}>
           <div className="list-group-item">
             <h4 className="list-group-item-heading">{item.title}</h4>
-            <p className="list-group-item-text"><a href={item.url} target="_blank">{item.url}</a></p>
+            <p className="list-group-item-text">
+              <a href={item.node} target="_blank">{item.node}</a>
+              <i className="fa fa-trash-o fa-lg pull-right cursor-pointer" onClick={self.deleteData.bind(this, item)}></i>
+              <i className="fa fa-pencil fa-lg pull-right cursor-pointer" onClick={self.editData.bind(this, item)}></i>
+            </p>
           </div>
         </div>
       );
     });
 
     var contextRows = [];
-    var self = this;
     this.state.context.forEach(function(item){
       contextRows.push(
-        <a className="list-group-item" key={item.context} onClick={self.setFilter.bind(this, item)}>
+        <a className="list-group-item cursor-pointer" key={item.context} onClick={self.setFilter.bind(this, item)}>
           {item.label}
         </a>
       );
@@ -134,7 +131,7 @@ export default React.createClass({
     var filterRows = [];
     this.state.filter.forEach(function(item){
       filterRows.push(
-        <a className="list-group-item" key={item.context} onClick={self.removeFilter.bind(this, item)}>
+        <a className="list-group-item cursor-pointer" key={item.context} onClick={self.removeFilter.bind(this, item)}>
           {item.label} <i className="fa fa-trash-o fa-lg pull-right"></i>
         </a>
       );
@@ -142,7 +139,7 @@ export default React.createClass({
 
     return <div>
       <div className="page-header">
-        <h1>Browse</h1>
+        <h1>Manage</h1>
       </div>
       <div className="row">
         <div className="col-md-3">

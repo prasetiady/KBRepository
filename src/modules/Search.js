@@ -10,9 +10,6 @@ export default React.createClass({
       keyword: ''
     }
   },
-  componentDidMount() {
-
-  },
   updateData() {
     var filterData = "";
     var filterContext = "";
@@ -48,7 +45,6 @@ export default React.createClass({
       +" SELECT * WHERE { "
       +"  ?node a owl:NamedIndividual ; "
       +"   dc:title ?title; "
-      +"   dc:source ?url; "
       +"   dc:description ?description . "
       + filterData
       + filterKeyword
@@ -108,10 +104,11 @@ export default React.createClass({
 
     this.updateData();
   },
-  handleChange(field, event) {
+  handleInputChange(field, event) {
     var nextState = {};
     nextState[field] = event.target.value;
     this.setState(nextState);
+    console.log(this.state);
   },
   handleSubmit(event){
     event.preventDefault();
@@ -124,7 +121,7 @@ export default React.createClass({
         <div className="list-group" key={item.node}>
           <div className="list-group-item">
             <h4 className="list-group-item-heading">{item.title}</h4>
-            <p className="list-group-item-text"><a href={item.url} target="_blank">{item.url}</a></p>
+            <p className="list-group-item-text"><a href={item.node} target="_blank">{item.node}</a></p>
           </div>
         </div>
       );
@@ -154,7 +151,7 @@ export default React.createClass({
         <h1>Search</h1>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group">
-            <input required type="text" className="form-control" placeholder="Search" value={this.state.keyword} onChange={this.handleChange.bind(this, 'keyword')}/>
+            <input required type="text" className="form-control" placeholder="Search" value={this.state.keyword} onChange={this.handleInputChange.bind(this, 'keyword')}/>
           </div>
         </form>
         <div className="row">
