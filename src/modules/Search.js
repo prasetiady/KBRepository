@@ -54,6 +54,9 @@ export default React.createClass({
       this.setState({
         data: helper.transformSparqlResults(result)
       });
+      if(this.state.data.length < 1){
+        alert("No results found for keyword \" " + this.state.keyword + " \"");
+      }
     });
 
     var queryContext = ""
@@ -108,7 +111,6 @@ export default React.createClass({
     var nextState = {};
     nextState[field] = event.target.value;
     this.setState(nextState);
-    console.log(this.state);
   },
   handleSubmit(event){
     event.preventDefault();
