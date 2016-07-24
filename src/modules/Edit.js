@@ -1,6 +1,7 @@
 import React from 'react'
 import Typeahead from 'react-bootstrap-typeahead'
 import * as helper from './Helper'
+import * as request from './Request'
 
 export default React.createClass({
   getInitialState() {
@@ -14,7 +15,7 @@ export default React.createClass({
   },
   componentDidMount() {
     var query = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> SELECT * WHERE { ?node a skos:Concept; skos:prefLabel ?label. }";
-    helper.sparqlSelect(query)
+    request.sparqlSelect(query)
       .then((results)=>{
         this.setState({
           context: helper.transformSparqlResults(results)
@@ -31,7 +32,7 @@ export default React.createClass({
       +"   dc:description ?description . "
       +" }";
     console.log(queryData);
-    helper.sparqlSelect(queryData).then((result)=>{
+    request.sparqlSelect(queryData).then((result)=>{
       var data = helper.transformSparqlResults(result);
       this.setState({
         title: data[0].title,
@@ -52,7 +53,7 @@ export default React.createClass({
       +"DELETE {<" + this.state.url + "> ?p ?o} WHERE {"
       + "<" + this.state.url + ">  a owl:NamedIndividual; ?p ?o.}";
 
-    helper.sparqlUpdate(query).then((result)=>{
+    request.sparqlUpdate(query).then((result)=>{
       addDocument();
     });
 
@@ -72,7 +73,7 @@ export default React.createClass({
           +"                  dc:title        \"" + self.state.title + "\";"
           +"                  dc:description  \"" + self.state.description.replace(/\W+/g, " ") + "\". }"
 
-      helper.sparqlUpdate(query).then((results)=>{
+      request.sparqlUpdate(query).then((results)=>{
         alert("success");
       }).catch((response)=>{
         alert(response.statusText);

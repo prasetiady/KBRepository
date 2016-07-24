@@ -1,6 +1,7 @@
 import React from 'react'
-import * as helper from './Helper'
 import { browserHistory } from 'react-router'
+import * as helper from './Helper'
+import * as request from './Request'
 
 export default React.createClass({
   getInitialState() {
@@ -31,7 +32,7 @@ export default React.createClass({
       + filterData
       +" }";
 
-    helper.sparqlSelect(queryData).then((result)=>{
+    request.sparqlSelect(queryData).then((result)=>{
       this.setState({
         data: helper.transformSparqlResults(result)
       });
@@ -47,7 +48,7 @@ export default React.createClass({
       + filterContext
       +"}";
 
-    helper.sparqlSelect(queryContext).then((result)=>{
+    request.sparqlSelect(queryContext).then((result)=>{
       this.setState({
         context: helper.transformSparqlResults(result)
       });
@@ -94,7 +95,7 @@ export default React.createClass({
       +"DELETE {<" + item.node + "> ?p ?o} WHERE {"
       + "<" + item.node + ">  a owl:NamedIndividual; ?p ?o.}";
 
-    helper.sparqlUpdate(query).then((result)=>{
+    request.sparqlUpdate(query).then((result)=>{
       this.updateData();
     });
   },

@@ -1,5 +1,6 @@
 import React from 'react'
 import * as helper from './Helper'
+import * as request from './Request'
 
 export default React.createClass({
   getInitialState() {
@@ -50,7 +51,7 @@ export default React.createClass({
       + filterKeyword
       +" }";
 
-    helper.sparqlSelect(queryData).then((result)=>{
+    request.sparqlSelect(queryData).then((result)=>{
       this.setState({
         data: helper.transformSparqlResults(result)
       });
@@ -71,7 +72,7 @@ export default React.createClass({
       + filterKeyword
       +"}";
 
-    helper.sparqlSelect(queryContext).then((result)=>{
+    request.sparqlSelect(queryContext).then((result)=>{
       this.setState({
         context: helper.transformSparqlResults(result)
       });

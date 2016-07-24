@@ -1,6 +1,7 @@
 import React from 'react'
 import Typeahead from 'react-bootstrap-typeahead'
 import * as helper from './Helper'
+import * as request from './Request'
 
 export default React.createClass({
   getInitialState() {
@@ -14,7 +15,7 @@ export default React.createClass({
   },
   componentDidMount() {
     var query = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> SELECT * WHERE { ?node a skos:Concept; skos:prefLabel ?label. }";
-    helper.sparqlSelect(query)
+    request.sparqlSelect(query)
       .then((results)=>{
         this.setState({
           context: helper.transformSparqlResults(results)
@@ -34,7 +35,7 @@ export default React.createClass({
       +"PREFIX owl: <http://www.w3.org/2002/07/owl#>"
       +"SELECT * WHERE { <" + this.state.url + ">  a owl:NamedIndividual; ?p ?o. }";
 
-    helper.sparqlSelect(queryCheckIfDocumentExist).then((result)=>{
+    request.sparqlSelect(queryCheckIfDocumentExist).then((result)=>{
       if (result.results.bindings.length > 0) { // Document Exist
         var r = confirm("Document with same uri exist update document ?");
         if (r != true ) return false;
@@ -54,7 +55,7 @@ export default React.createClass({
         +"DELETE {<" + self.state.url + "> ?p ?o} WHERE {"
         + "<" + self.state.url + ">  a owl:NamedIndividual; ?p ?o.}";
 
-      helper.sparqlUpdate(query).then((result)=>{
+      request.sparqlUpdate(query).then((result)=>{
         addDocument();
       });
     }
@@ -74,7 +75,7 @@ export default React.createClass({
           +"                  dc:title        \"" + self.state.title + "\";"
           +"                  dc:description  \"" + self.state.description.replace(/\W+/g, " ") + "\". }"
 
-      helper.sparqlUpdate(query).then((results)=>{
+      request.sparqlUpdate(query).then((results)=>{
         alert("success");
       }).catch((response)=>{
         alert(response.statusText);
